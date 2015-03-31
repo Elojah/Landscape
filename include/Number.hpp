@@ -9,7 +9,7 @@ public:
 	Number(void);
 	~Number(void);
 	int				detect(const char &c);
-	int				getPriority(void) const;
+	int				getType(void) const;
 protected:
 private:
 };

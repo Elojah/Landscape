@@ -10,6 +10,14 @@
 Landscape::Landscape(void) {
 }
 
+Landscape::~Landscape(void) {
+	glDeleteBuffers(1, &_vertexBuffer);
+	glDeleteBuffers(1, &_colorBuffer);
+	glDeleteBuffers(1, &_indexBuffer);
+	glDeleteVertexArrays(1, &_vertexArrayID);
+	glDeleteProgram(_progID);
+}
+
 Landscape::Landscape(std::string const &filename) :
 	_filename(filename) {
 }
@@ -28,36 +36,44 @@ void			Landscape::init(void) {
 }
 
 void	Landscape::initBuffers(void) {
+	static GLuint	g_index_buffer_data[WIDTH_MAP * HEIGHT_MAP * 6 + 1];
 	static GLfloat	g_vertex_buffer_data[WIDTH_MAP * HEIGHT_MAP * 3 + 1];
 	static GLfloat	g_color_buffer_data[WIDTH_MAP * HEIGHT_MAP * 3 + 1];
-	size_t			i;
+	size_t			i(0);
+	size_t			n;
 
 	/*Vertex Buffer*/
-	for (i = 0; i < WIDTH_MAP * HEIGHT_MAP * 3; i += 3) {
-		g_vertex_buffer_data[i] = (i / WIDTH_MAP) * 0.1f;
-		g_index_buffer_data[i] = i;
-	}
-	for (i = 2; i < WIDTH_MAP * HEIGHT_MAP * 3; i += 3) {
-		g_vertex_buffer_data[i] = (i % WIDTH_MAP) * 0.1f;
-	}
-	for (i = 1; i < WIDTH_MAP * HEIGHT_MAP * 3; i += 3) {
+	while (i < WIDTH_MAP * HEIGHT_MAP * 3) {
+		g_vertex_buffer_data[i] = ((i / 3) / WIDTH_MAP);
+		i++;
+		g_vertex_buffer_data[i] = (i / 3) % WIDTH_MAP;
+		i++;
 		g_vertex_buffer_data[i] = _map[(i / 3) / WIDTH_MAP][(i / 3) % WIDTH_MAP] * Z_MULT;
+		i++;
 	}
 	/*Color Buffer*/
 	for (i = 0; i < WIDTH_MAP * HEIGHT_MAP * 3; ++i) {
-		g_color_buffer_data[i] = i * 0.0001f;
+		g_color_buffer_data[i] = i / 3 * 0.0001f;
 	}
 	/*Index Buffer*/
-	for (i = 0; i < WIDTH_MAP * HEIGHT_MAP * 3; ++i) {
-		g_index_buffer_data[i * 3] = i;
-		g_index_buffer_data[i * 3 + 1] = i + WIDTH_MAP;
-		g_index_buffer_data[i * 3 + 2] = i + 1;
+	for (i = 0; i < (WIDTH_MAP - 1) * HEIGHT_MAP; ++i) {
+		n = i * 6;
+		g_index_buffer_data[n] = i;
+		g_index_buffer_data[n + 1] = i + 1;
+		g_index_buffer_data[n + 2] = i + WIDTH_MAP;
+		g_index_buffer_data[n + 3] = i + WIDTH_MAP + 1;
+		g_index_buffer_data[n + 4] = i + 1;
+		g_index_buffer_data[n + 5] = i + WIDTH_MAP;
 	}
 
-	glGenVertexArrays(1, &_vertexArrayID);
-	glBindVertexArray(_vertexArrayID);
 
-	_progID = LoadShaders("./src/shaders/SimpleTriangle.vert", "./src/shaders/SimpleTriangle.frag");
+	// for (i = 0; i < WIDTH_MAP * HEIGHT_MAP * 6; i += 6) {
+	// 	std::cout << g_index_buffer_data[i] << "\t"
+	// 	<< g_index_buffer_data[i + 1] << "\t"
+	// 	<< g_index_buffer_data[i + 2] << "\t" << std::endl;
+	// }
+
+	_progID = LoadShaders("./src/shaders/MVP.vert", "./src/shaders/MVP.frag");
 
 	glGenBuffers(1, &_vertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
@@ -96,18 +112,19 @@ void	Landscape::lexer(const Parser &p) {
 		if (reads[i].type != SCOPE
 			|| reads[i + 1].type != NUMBER || reads[i + 2].type != NUMBER || reads[i + 3].type != NUMBER
 			|| reads[i + 4].type != SCOPE) {
+			std::cout << "Tokens are not ordered:\t" << reads[i].buffer << std::endl;
 			return ;
 		}
-		x = strtof(reads[i + 1].word.c_str(), NULL);
-		y = strtof(reads[i + 2].word.c_str(), NULL);
-		z = strtof(reads[i + 3].word.c_str(), NULL);
+		x = strtof(reads[i + 1].buffer.c_str(), NULL);
+		y = strtof(reads[i + 2].buffer.c_str(), NULL);
+		z = strtof(reads[i + 3].buffer.c_str(), NULL);
 		x = fmod((x / WIDTH_DIVIDE), WIDTH_MAP);
 		y = fmod((y / HEIGHT_DIVIDE), HEIGHT_MAP);
 		z = fmod((z / Z_DIVIDE), Z_MAX);
 
 		std::cout << "Assign value: " << z << " at point (" << x << ", " << y << ")" << std::endl;
-		_immovablePoints.push_back((t_point){static_cast<unsigned int>(x), static_cast<unsigned int>(y), z});
-		_map[static_cast<unsigned int>(x)][static_cast<unsigned int>(y)] = z;
+		_immovablePoints.push_back((t_point){static_cast<size_t>(x), static_cast<size_t>(y), z});
+		_map[static_cast<size_t>(x)][static_cast<size_t>(y)] = z;
 		i += 5;
 	}
 
@@ -126,8 +143,8 @@ void	Landscape::smoothMap(void) {
 }
 
 void	Landscape::smoothPoint(t_point const &originPoint, t_point const &closestPoint) {
-	unsigned int	i;
-	unsigned int	j;
+	size_t			i;
+	size_t			j;
 	float			z;
 	float			dist;
 	float			maxDist;
@@ -155,11 +172,11 @@ void	Landscape::smoothPoint(t_point const &originPoint, t_point const &closestPo
 }
 
 void	Landscape::findClosestPoint(t_point const &origin, t_point &closest) const {
-	unsigned int	xDist;
-	unsigned int	yDist;
-	unsigned int	xTmp;
-	unsigned int	yTmp;
-	unsigned int	dist;
+	size_t			xDist;
+	size_t			yDist;
+	size_t			xTmp;
+	size_t			yTmp;
+	size_t			dist;
 
 
 	xDist = origin.x > WIDTH_MAP / 2 ? WIDTH_MAP - origin.x : origin.x;
@@ -190,8 +207,8 @@ void	Landscape::findClosestPoint(t_point const &origin, t_point &closest) const 
 }
 
 void		Landscape::printMap(void) const {
-	unsigned int	i;
-	unsigned int	j;
+	size_t			i;
+	size_t			j;
 
 	for (i = 0; i < WIDTH_MAP; ++i) {
 		for (j = 0; j < HEIGHT_MAP; ++j) {
@@ -204,8 +221,8 @@ void		Landscape::printMap(void) const {
 }
 
 void		Landscape::clearMap(void) {
-	unsigned int	i;
-	unsigned int	j;
+	size_t			i;
+	size_t			j;
 
 	for (i = 0; i < WIDTH_MAP; ++i) {
 		for (j = 0; j < HEIGHT_MAP; ++j) {
@@ -215,8 +232,8 @@ void		Landscape::clearMap(void) {
 }
 
 void		Landscape::useMap(void) {
-	unsigned int	i;
-	unsigned int	j;
+	size_t			i;
+	size_t			j;
 
 	for (i = 0; i < WIDTH_MAP; ++i) {
 		for (j = 0; j < HEIGHT_MAP; ++j) {
@@ -243,14 +260,17 @@ void	Landscape::draw(void) const {
 	glBindBuffer(GL_ARRAY_BUFFER, _colorBuffer);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vertexBuffer);
-	// glDrawElements(
-	// 	GL_TRIANGLE_STRIP,
-	// 	WIDTH_MAP * HEIGHT_MAP * 3,
-	// 	GL_UNSIGNED_INT,
-	// 	g_index_buffer_data
-	// );
-	glDrawArrays(GL_POLYGON, 0, WIDTH_MAP * HEIGHT_MAP);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vertexBuffer);
+	glDrawElements(
+		// GL_POINTS,
+		GL_TRIANGLE_STRIP,
+		// GL_TRIANGLE_FAN,
+		WIDTH_MAP * HEIGHT_MAP * 3 * sizeof(size_t),
+		GL_UNSIGNED_INT,
+		(char *)NULL
+	);
+
+	// glDrawArrays(GL_POLYGON, 0, WIDTH_MAP * HEIGHT_MAP);
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 }

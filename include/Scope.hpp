@@ -9,7 +9,7 @@ public:
 	Scope(void);
 	~Scope(void);
 	int				detect(const char &c);
-	int				getPriority(void) const;
+	int				getType(void) const;
 protected:
 private:
 };

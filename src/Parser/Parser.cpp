@@ -96,7 +96,7 @@ void			Parser::initGlobalTokens(void) {
 
 void			Parser::display(void) {
 	for (tTokens::iterator iTok = _readTokens.begin(); iTok != _readTokens.end(); ++iTok) {
-		std::cout << "READ:\t" << iTok->word << " of type " << iTok->type << std::endl;
+		std::cout << "READ:\t" << iTok->buffer << " of type " << iTok->type << std::endl;
 	}
 }
 

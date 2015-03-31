@@ -2,7 +2,6 @@
 #include <ctype.h>
 
 Scope::Scope(void) {
-	_read.type = SCOPE;
 }
 
 Scope::~Scope(void) {
@@ -12,7 +11,7 @@ int			Scope::detect(const char &c) {
 	bool		empty(isEmptyWord());
 
 	if (empty && (c == '(' || c == ')')) {
-		_read.word.push_back(c);
+		_buffer.push_back(c);
 		return (FOUND);
 	}
 	if (!isEmptyWord()) {
@@ -22,6 +21,6 @@ int			Scope::detect(const char &c) {
 	}
 }
 
-int			Scope::getPriority(void) const {
-	return (1);
+int			Scope::getType(void) const {
+	return (SCOPE);
 }

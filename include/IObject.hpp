@@ -30,6 +30,7 @@ protected:
 	glm::mat4		mvp;
 	GLuint			_vertexBuffer;
 	GLuint			_colorBuffer;
+	GLuint			_indexBuffer;
 	GLuint			_vertexArrayID;
 	GLuint			_progID;
 	GLuint			_matrixID;

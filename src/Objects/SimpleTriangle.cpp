@@ -43,46 +43,30 @@ void	SimpleTriangle::init(void) {
 		0.820f, 0.883f, 0.371f,
 		0.982f, 0.099f, 0.879f
 	};
-
 	static const		GLfloat g_vertex_buffer_data[] = {
-		-1.0f,-1.0f,-1.0f, // triangle 1 : début
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f, // triangle 1 : fin
-		1.0f, 1.0f,-1.0f, // triangle 2 : début
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f, // triangle 2 : fin
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f
+		1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f
 	};
-
+	static const		GLuint g_index_buffer_data[] = {
+		0, 1, 2,
+		0, 2, 3,
+		2, 3, 4,
+		2, 4, 5,
+		4, 5, 6,
+		4, 6, 7,
+		0, 1, 7,
+		1, 6, 7,
+		1, 3, 4,
+		0, 4, 7,
+		1, 2, 6,
+		2, 5, 6
+	};
 
 	glGenVertexArrays(1, &_vertexArrayID);
 	glBindVertexArray(_vertexArrayID);
@@ -96,6 +80,10 @@ void	SimpleTriangle::init(void) {
 	glGenBuffers(1, &_colorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, _colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &_indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_index_buffer_data), g_index_buffer_data, GL_STATIC_DRAW);
 }
 
 void	SimpleTriangle::draw(void) const {
@@ -111,7 +99,14 @@ void	SimpleTriangle::draw(void) const {
 	glBindBuffer(GL_ARRAY_BUFFER, _colorBuffer);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vertexBuffer);
+	glDrawElements(
+		GL_TRIANGLES,
+		12 * 3,
+		GL_UNSIGNED_INT,
+		(char *)NULL
+	);
+	// glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 }

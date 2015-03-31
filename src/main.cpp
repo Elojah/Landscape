@@ -6,20 +6,32 @@
 */
 
 #include <vector>
+#include <iostream>
 #include "X11Win.hpp"
 #include "Map.hpp"
+#include "SimpleTriangle.hpp"
 #include "Landscape.hpp"
 
-int main(void) {
+void	exec(char *filename) {
 	X11Win					win(800, 600);
 	Camera					cam;
 	Map					m;
-	Landscape				l("./test/demo1.mod1");
+	// SimpleTriangle			t;
+	Landscape				l(filename);
 
 	win.init();
 	l.init();
 	m.addObject(&l);
+	// m.addObject(&t);
 
 	win.loop(m, cam);
+}
+
+int main(int ac, char **av) {
+	if (ac != 2) {
+		std::cout << "Enter a filename:\t" << std::endl;
+	} else {
+		exec(av[1]);
+	}
 	return (0);
 }
