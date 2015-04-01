@@ -262,9 +262,7 @@ void	Landscape::draw(void) const {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vertexBuffer);
 	glDrawElements(
-		// GL_POINTS,
 		GL_TRIANGLE_STRIP,
-		// GL_TRIANGLE_FAN,
 		WIDTH_MAP * HEIGHT_MAP * 3 * sizeof(size_t),
 		GL_UNSIGNED_INT,
 		(char *)NULL

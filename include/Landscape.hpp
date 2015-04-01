@@ -1,12 +1,12 @@
 #ifndef LANDSCAPE_H
 # define LANDSCAPE_H
-# define WIDTH_DIVIDE 400
-# define HEIGHT_DIVIDE 400
+# define WIDTH_DIVIDE 200
+# define HEIGHT_DIVIDE 200
 # define Z_DIVIDE 7000
 # define Z_MAX 7000
-# define WIDTH_MAP 50
-# define HEIGHT_MAP 50
-# define Z_MULT 10
+# define WIDTH_MAP 100
+# define HEIGHT_MAP 100
+# define Z_MULT 30
 
 # include "IObject.hpp"
 # include <string>
